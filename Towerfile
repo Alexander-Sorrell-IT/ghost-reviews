@@ -1,0 +1,18 @@
+[app]
+name = "ghost-reviews"
+script = "./run_pipeline.py"
+source = [
+    "./run_pipeline.py",
+    "./ghost/*.py",
+    "requirements.txt",
+]
+
+[[parameters]]
+name = "product"
+description = "The product whose reviews you want to scan for fakes."
+default = "Acme Wireless Earbuds"
+
+[[parameters]]
+name = "max_results"
+description = "How many live reviews to pull and score."
+default = "10"

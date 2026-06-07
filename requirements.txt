@@ -1,0 +1,9 @@
+anthropic>=0.40.0
+requests>=2.31.0
+streamlit>=1.40.0
+python-dotenv>=1.0.0
+
+# Tower lakehouse write (used by `tower deploy`; lazy-imported, optional for the
+# local sample demo). Provides the `tower` lib + Iceberg/pyarrow support.
+tower[iceberg]
+pyarrow>=14.0.0
