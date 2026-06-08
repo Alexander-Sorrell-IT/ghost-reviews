@@ -6,9 +6,11 @@ Built for the DeveloperWeek New York 2026 Hackathon. One project, three sponsor 
 
 | Sponsor | How we use it |
 |---|---|
-| **Nimble** | `ghost/nimble_client.py` pulls **live** review text from across the web via the Nimble Search API (deep mode = real-time webpage extraction). |
-| **Tower** | `run_pipeline.py` + `Towerfile` deploy the crawl→score→store pipeline as a serverless Python app, with secrets + scheduling. |
-| **name.com** | The product *is* the domain **ghost.reviews** — "ghost" = fake/phantom reviews. The name is the concept. |
+| **name.com** | The product *is* the domain **ghost.reviews** (drawn from name.com's Domain Roulette) — "ghost" = the phantom AI ghostwriter behind a fake review; ".reviews" = the medium. The name is the concept. |
+| **Tower** | `run_pipeline.py` + `Towerfile` deploy the crawl→score→store pipeline as a serverless Python app on Tower, with secrets, a daily schedule, and an Apache Iceberg lakehouse table (`ghost_scans`). |
+| **Nimble** | `ghost/nimble_client.py` integrates the Nimble Search API as the live-web input layer — it flips from sample data to real-time review extraction the instant `NIMBLE_API_KEY` is set. The public demo runs in **sample mode** (no key required). |
+
+> **A note on the demo:** ghost.reviews runs end-to-end with **zero keys** on built-in sample reviews (the dashboard shows a "Demo mode" badge). The Nimble integration is built and ready — set `NIMBLE_API_KEY` and the same pipeline pulls live reviews from the web. The detection engine, scoring, rating-gap analysis, Tower deployment, and lakehouse history all work identically in either mode.
 
 ---
 
