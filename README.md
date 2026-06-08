@@ -2,6 +2,10 @@
 
 **Paste a product → we pull its reviews from the live web → AI exposes the fakes ("ghost" reviews) → you get a Ghost Score.**
 
+![ghost.reviews — AVOID verdict: 50% AI, listed 4.1★ vs real human 3.2★](media/verdict.png)
+
+> 🎬 [Watch the 35-sec demo](media/demo.mp4) · 🔴 [Live app](https://ghost-reviews.streamlit.app/)
+
 Built for the DeveloperWeek New York 2026 Hackathon. One project, three sponsor challenges:
 
 | Sponsor | How we use it |
