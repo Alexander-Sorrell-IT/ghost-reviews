@@ -2,9 +2,12 @@
 
 **Paste a product's reviews → AI exposes the fakes ("ghost" reviews) → you get a trust verdict + the real human-vs-AI rating gap.**
 
-![ghost.reviews — AVOID verdict: 50% AI, listed 4.1★ vs real human 3.2★](media/verdict.png)
+![ghost.reviews running live — real Bose reviews pulled from the web via Nimble, real Amazon rating 3.8★ across 10,044 reviews, per-review AI teardown](media/live.png)
 
-> 🎬 [Watch the 35-sec demo](media/demo.mp4) · 🔴 [Live app](https://ghost-reviews.streamlit.app/)
+> 🎬 [Watch the 36-sec live demo](https://youtu.be/zMiyi5dRsA) · 🔴 [Live app](https://ghost-reviews.streamlit.app/)
+>
+> *The full human-vs-AI rating-gap verdict (e.g. listed 4.1★ → real humans 3.2★ → **AVOID**) is shown on a labeled sample dataset, because live review snippets don't expose per-review stars:*
+> ![sample-mode AVOID verdict: 50% AI, listed 4.1★ vs real human 3.2★](media/verdict.png)
 
 Built for the DeveloperWeek New York 2026 Hackathon — submitted to three sponsor challenges:
 
