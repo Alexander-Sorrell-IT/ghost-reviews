@@ -1,33 +1,32 @@
 # 👻 ghost.reviews
 
-**Paste a product → we pull its reviews from the live web → AI exposes the fakes ("ghost" reviews) → you get a Ghost Score.**
+**Paste a product's reviews → AI exposes the fakes ("ghost" reviews) → you get a trust verdict + the real human-vs-AI rating gap.**
 
 ![ghost.reviews — AVOID verdict: 50% AI, listed 4.1★ vs real human 3.2★](media/verdict.png)
 
 > 🎬 [Watch the 35-sec demo](media/demo.mp4) · 🔴 [Live app](https://ghost-reviews.streamlit.app/)
 
-Built for the DeveloperWeek New York 2026 Hackathon. One project, three sponsor challenges:
+Built for the DeveloperWeek New York 2026 Hackathon — submitted to two sponsor challenges:
 
 | Sponsor | How we use it |
 |---|---|
 | **name.com** | The product *is* the domain **ghost.reviews** (drawn from name.com's Domain Roulette) — "ghost" = the phantom AI ghostwriter behind a fake review; ".reviews" = the medium. The name is the concept. |
-| **Tower** | `run_pipeline.py` + `Towerfile` deploy the crawl→score→store pipeline as a serverless Python app on Tower, with secrets, a daily schedule, and an Apache Iceberg lakehouse table (`ghost_scans`). |
-| **Nimble** | `ghost/nimble_client.py` integrates the Nimble Search API as the live-web input layer — it flips from sample data to real-time review extraction the instant `NIMBLE_API_KEY` is set. The public demo runs in **sample mode** (no key required). |
+| **Tower** | `run_pipeline.py` + `Towerfile` deploy the review-scoring pipeline as a serverless Python app on Tower, with secrets, a daily schedule, and an Apache Iceberg lakehouse table (`ghost_scans`). |
 
-> **A note on the demo:** ghost.reviews runs end-to-end with **zero keys** on built-in sample reviews (the dashboard shows a "Demo mode" badge). The Nimble integration is built and ready — set `NIMBLE_API_KEY` and the same pipeline pulls live reviews from the web. The detection engine, scoring, rating-gap analysis, Tower deployment, and lakehouse history all work identically in either mode.
+> **A note on the demo:** ghost.reviews runs end-to-end with **zero keys** on a built-in sample set of reviews (the dashboard shows a "Demo mode" badge). The detection engine, scoring, rating-gap analysis, Tower deployment, and lakehouse history all run on that sample data — no external accounts required.
 
 ---
 
 ## How it works
 
 ```
-  product name
+  product + its reviews
       │
       ▼
- [ Nimble ]   live web → real review text          (ghost/nimble_client.py)
+ [ Reviews ]  sample review set in the demo         (ghost/nimble_client.py)
       │
       ▼
- [ Claude ]   scores each review 0–100 "ghost"      (ghost/detector.py)
+ [ Engine ]   scores each review 0–100 "ghost"      (ghost/detector.py)
       │           + red-flag reasons
       ▼
  [ Output ]   Ghost Score + flagged reviews         (ghost/pipeline.py)
@@ -48,9 +47,8 @@ pip install -r requirements.txt
 streamlit run app.py        # runs immediately in free SAMPLE mode — no keys
 ```
 
-It runs with **zero keys** on built-in sample reviews (the dashboard shows a
-"Demo mode" badge). To go live, `cp .env.example .env` and fill in:
-- `NIMBLE_API_KEY` → pulls real reviews from the web (badge flips to "Live mode")
+It runs with **zero keys** on a built-in sample set of reviews (the dashboard shows a
+"Demo mode" badge). Optionally `cp .env.example .env` and set:
 - `ANTHROPIC_API_KEY` → upgrades the teardown from the free rule engine to Claude
 
 Type a product, hit **Scan for ghosts**, record the screen. Done.
@@ -77,8 +75,7 @@ tower login
 # 1. (once) make sure your account has a default Iceberg catalog
 #    Tower dashboard -> Catalogs -> create one if you don't have it.
 
-# 2. store keys as Tower secrets (injected as env vars at runtime)
-tower secrets create --name=NIMBLE_API_KEY    --value=...   # optional (live reviews)
+# 2. (optional) store an Anthropic key as a Tower secret for the Claude teardown
 tower secrets create --name=ANTHROPIC_API_KEY --value=...   # optional (Claude teardown)
 
 # 3. deploy + run
@@ -103,11 +100,11 @@ duplicating it.
 ---
 
 ## Keys you need
-- **NIMBLE_API_KEY** — from https://www.nimbleway.com/ dashboard
-- **ANTHROPIC_API_KEY** — from the Anthropic console
+None for the demo — it runs free on the built-in sample review set.
+- **ANTHROPIC_API_KEY** (optional) — upgrades the teardown from the rule engine to Claude
 
 ## Files
-- `ghost/nimble_client.py` — live web → reviews (Nimble), with sample fallback
+- `ghost/nimble_client.py` — review source (built-in sample set; optional live fetch)
 - `ghost/detector.py` — adversarial teardown: human-vs-AI score + reasons + self-written baselines + family preview
 - `ghost/model_profiles.py` — how each model family tends to write (the "fingerprint" knowledge)
 - `ghost/lakehouse.py` — upserts each scan summary into the Tower Iceberg table `ghost_scans`
