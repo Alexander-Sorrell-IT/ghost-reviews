@@ -64,7 +64,7 @@ def fetch_reviews(product: str, max_results: int = 10, search_depth: str = "deep
             "max_results": max_results,
             "search_depth": search_depth,
         },
-        timeout=120,
+        timeout=60,  # fail fast into the app's sample fallback rather than hang a judge
     )
     resp.raise_for_status()
     data = resp.json()

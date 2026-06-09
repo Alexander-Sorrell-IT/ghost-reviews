@@ -45,15 +45,36 @@ else:
 
 product = st.text_input("Product (name or listing URL)",
                         placeholder="e.g. Bose QuietComfort Ultra earbuds")
-max_results = st.slider("How many reviews to scan", 5, 25, 8)
+max_results = st.slider("How many reviews to scan", 5, 25, 5)
 
 if st.button("Scan for ghosts", type="primary", disabled=not product):
+    fell_back = False
     with st.spinner("Pulling reviews and tearing them apart…"):
         try:
             result = run(product, max_results=max_results)
         except Exception as e:
-            st.error(f"Couldn't fetch/score reviews: {e}")
-            st.stop()
+            # Live fetch failed (timeout / rate-limit / transient Nimble error).
+            # Degrade to the sample dataset rather than dying on the user — but
+            # ONLY with an honest relabel below, never silently under the Live badge.
+            if not using_samples():
+                os.environ["GHOST_SAMPLE"] = "1"
+                try:
+                    result = run(product, max_results=max_results)
+                    fell_back = True
+                except Exception as e2:
+                    st.error(f"Couldn't fetch/score reviews: {e2}")
+                    st.stop()
+                finally:
+                    os.environ.pop("GHOST_SAMPLE", None)
+            else:
+                st.error(f"Couldn't fetch/score reviews: {e}")
+                st.stop()
+
+    if fell_back:
+        st.warning("⚠️ **Live fetch unavailable right now** (Nimble timeout or rate "
+                   "limit) — showing the built-in **sample dataset** instead, not live "
+                   "web data.")
+
     s = result["summary"]
 
     if s.get("total", 0) == 0:
