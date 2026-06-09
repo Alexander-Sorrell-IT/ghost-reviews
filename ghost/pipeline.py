@@ -14,18 +14,34 @@ import os
 
 from ghost.detector import analyze, score_reviews, self_baselines
 from ghost.lakehouse import write_scan
-from ghost.nimble_client import fetch_reviews
+from ghost.nimble_client import (
+    fetch_amazon_listing,
+    fetch_reviews,
+    find_asin,
+    using_samples,
+)
 
 
 def run(product: str, max_results: int = 10) -> dict:
     reviews = fetch_reviews(product, max_results=max_results)
     scored = score_reviews(reviews, product=product)
     summary = analyze(scored)
+
+    # Live-mode enrichment: if this product maps to an Amazon listing, pull its
+    # REAL listed rating + star distribution from Amazon (via Nimble's amazon_pdp
+    # agent) as honest context. Aggregate only — never the per-review human/AI gap.
+    listing = None
+    if not using_samples():
+        asin = find_asin(product, reviews)
+        if asin:
+            listing = fetch_amazon_listing(asin)
+
     return {
         "product": product,
         "summary": summary,
         "baselines": self_baselines(product),
         "reviews": scored,
+        "listing": listing,
     }
 
 

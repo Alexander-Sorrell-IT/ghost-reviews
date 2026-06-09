@@ -11,7 +11,7 @@ Built for the DeveloperWeek New York 2026 Hackathon — submitted to three spons
 | Sponsor | How we use it |
 |---|---|
 | **name.com** | The product *is* the domain **ghost.reviews** (drawn from name.com's Domain Roulette) — "ghost" = the phantom AI ghostwriter behind a fake review; ".reviews" = the medium. The name is the concept. |
-| **Nimble** | `ghost/nimble_client.py` calls Nimble's Search API to pull **real reviews from across the live web** (Trustpilot, Reddit, retailer pages, forums) for whatever product you enter — those live reviews are what the engine tears apart. |
+| **Nimble** | `ghost/nimble_client.py` calls Nimble's **Search API** to pull **real reviews from across the live web** (Trustpilot, Reddit, retailer pages, forums) — those live reviews are what the engine tears apart. When the product maps to an Amazon listing, it also calls Nimble's **`amazon_pdp` agent** for the listing's *real* listed rating + star distribution (aggregate context only — never used to fake the per-review human-vs-AI gap). |
 | **Tower** | `run_pipeline.py` + `Towerfile` deploy the review-scoring pipeline as a serverless Python app on Tower, with secrets, a daily schedule, and an Apache Iceberg lakehouse table (`ghost_scans`). |
 
 > **A note on the two modes (both honest):**

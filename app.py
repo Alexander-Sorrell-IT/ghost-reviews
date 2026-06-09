@@ -92,15 +92,35 @@ if st.button("Scan for ghosts", type="primary", disabled=not product):
     def stars(val):
         return f"{val} ★" if val is not None else "—"
 
+    # Prefer the real Amazon listed rating (live) over the per-review average when
+    # we have it; fall back to the scanned-review average (sample mode).
+    listing = result.get("listing")
+    listed_val = listing["listed_rating"] if listing else s["overall_rating"]
+
     c1, c2, c3 = st.columns(3)
     c1.metric("AI-written", f"{s['pct_ai']}%", f"{s['ai_count']} of {s['total']}")
-    c2.metric("Listed rating", stars(s["overall_rating"]))
+    c2.metric("Listed rating", stars(listed_val))
     delta = None
-    if s["human_rating"] is not None and s["overall_rating"] is not None:
-        delta = round(s["human_rating"] - s["overall_rating"], 1)
+    if s["human_rating"] is not None and listed_val is not None:
+        delta = round(s["human_rating"] - listed_val, 1)
     c3.metric("Real human rating", stars(s["human_rating"]), delta)
 
-    if s.get("suspect_count"):
+    if listing:
+        n = listing.get("num_reviews")
+        dist = listing.get("star_distribution") or {}
+        five, one = dist.get("5_star"), dist.get("1_star")
+        bits = [f"📦 **Listed rating is live from Amazon**"]
+        if n:
+            bits.append(f"across **{n:,} reviews**")
+        st.caption(" ".join(bits) + ".")
+        if five and one:
+            st.caption(f"Star spread — {five} are 5★ · {one} are 1★"
+                       + (f"  ·  {dist.get('2_star','')}/{dist.get('3_star','')}/"
+                          f"{dist.get('4_star','')} for 2–4★" if dist.get('3_star') else "")
+                       + ". *(The per-review human-vs-AI rating gap needs each review's "
+                       "own star — which the live listing scrape doesn't expose — so it's "
+                       "shown on the sample dataset, not faked here.)*")
+    elif s.get("suspect_count"):
         st.caption(f"({s['suspect_count']} borderline 'suspect' reviews excluded "
                    "from the human rating.)")
 
