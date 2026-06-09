@@ -8,6 +8,8 @@ ghostwritten, show how the AI is steering the rating, and give a trust verdict.
 Run:  streamlit run app.py
 """
 
+import os
+
 import streamlit as st
 from dotenv import load_dotenv
 
@@ -16,6 +18,16 @@ from ghost.pipeline import run
 
 load_dotenv()
 
+# On Streamlit Community Cloud secrets live in st.secrets, not the environment,
+# but the pipeline reads keys via os.getenv. Bridge them so the SAME code runs
+# live on Cloud (key in Secrets) and locally (key in .env) with no branching.
+for _k in ("NIMBLE_API_KEY", "ANTHROPIC_API_KEY"):
+    try:
+        if not os.getenv(_k) and _k in st.secrets:
+            os.environ[_k] = str(st.secrets[_k])
+    except Exception:
+        pass  # no secrets.toml at all (pure local) — env/.env already covers it
+
 st.set_page_config(page_title="ghost.reviews", page_icon="👻", layout="centered")
 
 st.title("👻 ghost.reviews")
@@ -23,11 +35,16 @@ st.caption("Which reviews are real humans — and which are AI ghostwriters stee
 
 # Be explicit about where the data is coming from so judges aren't misled.
 if using_samples():
-    st.caption("🔧 **Demo mode:** built-in sample reviews. Set `NIMBLE_API_KEY` for live web data.")
+    st.caption("🔧 **Sample mode:** a built-in representative dataset (reviews *with* star "
+               "ratings) so you can see the full human-vs-AI **rating-gap** verdict. "
+               "Add `NIMBLE_API_KEY` to pull **live web reviews** via Nimble instead.")
 else:
-    st.caption("🟢 **Live mode:** reviews pulled from the web via Nimble.")
+    st.caption("🟢 **Live mode:** reviews pulled from the live web via Nimble. "
+               "Verdict rests on the per-review human-vs-AI teardown; the rating-gap "
+               "metric fills in only when the source exposes per-review stars.")
 
-product = st.text_input("Product (name or listing URL)", placeholder="e.g. Acme Wireless Earbuds")
+product = st.text_input("Product (name or listing URL)",
+                        placeholder="e.g. Bose QuietComfort Ultra earbuds")
 max_results = st.slider("How many reviews to scan", 5, 25, 8)
 
 if st.button("Scan for ghosts", type="primary", disabled=not product):

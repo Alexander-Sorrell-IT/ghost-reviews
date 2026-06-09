@@ -6,14 +6,17 @@
 
 > 🎬 [Watch the 35-sec demo](media/demo.mp4) · 🔴 [Live app](https://ghost-reviews.streamlit.app/)
 
-Built for the DeveloperWeek New York 2026 Hackathon — submitted to two sponsor challenges:
+Built for the DeveloperWeek New York 2026 Hackathon — submitted to three sponsor challenges:
 
 | Sponsor | How we use it |
 |---|---|
 | **name.com** | The product *is* the domain **ghost.reviews** (drawn from name.com's Domain Roulette) — "ghost" = the phantom AI ghostwriter behind a fake review; ".reviews" = the medium. The name is the concept. |
+| **Nimble** | `ghost/nimble_client.py` calls Nimble's Search API to pull **real reviews from across the live web** (Trustpilot, Reddit, retailer pages, forums) for whatever product you enter — those live reviews are what the engine tears apart. |
 | **Tower** | `run_pipeline.py` + `Towerfile` deploy the review-scoring pipeline as a serverless Python app on Tower, with secrets, a daily schedule, and an Apache Iceberg lakehouse table (`ghost_scans`). |
 
-> **A note on the demo:** ghost.reviews runs end-to-end with **zero keys** on a built-in sample set of reviews (the dashboard shows a "Demo mode" badge). The detection engine, scoring, rating-gap analysis, Tower deployment, and lakehouse history all run on that sample data — no external accounts required.
+> **A note on the two modes (both honest):**
+> - **Live mode** (set `NIMBLE_API_KEY`): ghost.reviews pulls **real reviews from the live web via Nimble** and runs the full per-review human-vs-AI teardown on them. The trust verdict rests on that detection; the human-vs-AI **rating gap** fills in only when the source exposes per-review star ratings.
+> - **Sample mode** (zero keys): a built-in **representative dataset** of reviews *with* star ratings, so you can see the complete **rating-gap** verdict (e.g. *humans 3.2★ vs listed 4.1★ → AVOID*) end-to-end. The dashboard shows a clear mode badge so the two are never confused.
 
 ---
 
@@ -23,7 +26,7 @@ Built for the DeveloperWeek New York 2026 Hackathon — submitted to two sponsor
   product + its reviews
       │
       ▼
- [ Reviews ]  sample review set in the demo         (ghost/nimble_client.py)
+ [ Reviews ]  live web pull via Nimble (or sample)   (ghost/nimble_client.py)
       │
       ▼
  [ Engine ]   scores each review 0–100 "ghost"      (ghost/detector.py)
@@ -47,8 +50,9 @@ pip install -r requirements.txt
 streamlit run app.py        # runs immediately in free SAMPLE mode — no keys
 ```
 
-It runs with **zero keys** on a built-in sample set of reviews (the dashboard shows a
-"Demo mode" badge). Optionally `cp .env.example .env` and set:
+It runs with **zero keys** on a built-in representative review set (the dashboard shows a
+"Sample mode" badge). Optionally `cp .env.example .env` and set:
+- `NIMBLE_API_KEY` → flips to **live mode**: real reviews pulled from the web via Nimble
 - `ANTHROPIC_API_KEY` → upgrades the teardown from the free rule engine to Claude
 
 Type a product, hit **Scan for ghosts**, record the screen. Done.
@@ -100,11 +104,12 @@ duplicating it.
 ---
 
 ## Keys you need
-None for the demo — it runs free on the built-in sample review set.
+None for the demo — it runs free on the built-in representative review set.
+- **NIMBLE_API_KEY** (optional) — flips to live mode: pulls real reviews from the web via Nimble's Search API
 - **ANTHROPIC_API_KEY** (optional) — upgrades the teardown from the rule engine to Claude
 
 ## Files
-- `ghost/nimble_client.py` — review source (built-in sample set; optional live fetch)
+- `ghost/nimble_client.py` — review source: live web pull via Nimble's Search API, or the built-in representative set
 - `ghost/detector.py` — adversarial teardown: human-vs-AI score + reasons + self-written baselines + family preview
 - `ghost/model_profiles.py` — how each model family tends to write (the "fingerprint" knowledge)
 - `ghost/lakehouse.py` — upserts each scan summary into the Tower Iceberg table `ghost_scans`
